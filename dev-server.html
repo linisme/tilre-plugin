@@ -326,12 +326,7 @@
         <div class="dev-params-grid">
           <div class="param-group">
             <label for="param-units">units:</label>
-            <select id="param-units" data-param-name="units" data-param-type="string">
-              <option value="hms">hms</option>
-              <option value="ms">ms</option>
-              <option value="s">s</option>
-              <option value="dhms">dhms</option>
-            </select>
+            <input type="text" id="param-units" value="hms" placeholder="yMdhmsS" data-param-name="units" data-param-type="string">
           </div>
           <div class="param-group">
             <label for="param-compact">compact:</label>
@@ -368,36 +363,44 @@
     /**
      * Mock TimeFormatter
      * Provides time formatting utilities
+     * Supports: y(years), M(months), d(days), h(hours), m(minutes), s(seconds), S(milliseconds)
      */
     window.TimeFormatter = {
+      // Unit definitions: [seconds per unit, max value before overflow, pad width]
+      UNITS: {
+        y: [365 * 24 * 3600, Infinity, 1],
+        M: [30 * 24 * 3600, 12, 2],
+        d: [24 * 3600, 365, 2],
+        h: [3600, 24, 2],
+        m: [60, 60, 2],
+        s: [1, 60, 2],
+        S: [0.001, 1000, 3]
+      },
+
       decompose(ms, units = 'hms', compact = 0) {
         const absMs = Math.abs(ms);
-        const totalSeconds = Math.floor(absMs / 1000);
+        let remaining = absMs / 1000; // Convert to seconds
 
-        const values = {
-          d: Math.floor(totalSeconds / 86400),
-          h: Math.floor((totalSeconds % 86400) / 3600),
-          m: Math.floor((totalSeconds % 3600) / 60),
-          s: totalSeconds % 60
-        };
-
-        // If units don't include higher units, accumulate into highest unit
-        const unitList = units.split('').filter(u => 'dhms'.includes(u));
-        if (!unitList.includes('d') && unitList.includes('h')) {
-          values.h += values.d * 24;
-        }
-        if (!unitList.includes('h') && unitList.includes('m')) {
-          values.m += (values.d * 24 + values.h) * 60;
-        }
-        if (!unitList.includes('m') && unitList.includes('s')) {
-          values.s = totalSeconds;
-        }
-
+        const unitList = units.split('').filter(u => this.UNITS[u]);
+        const values = {};
         const display = [];
 
         unitList.forEach((unit, index) => {
-          const val = values[unit] || 0;
-          const formatted = index === 0 ? String(val) : String(val).padStart(2, '0');
+          const [secPerUnit] = this.UNITS[unit];
+          let val;
+
+          if (index === 0) {
+            // First unit gets all overflow
+            val = Math.floor(remaining / secPerUnit);
+          } else {
+            val = Math.floor(remaining / secPerUnit);
+          }
+
+          values[unit] = val;
+          remaining -= val * secPerUnit;
+
+          const padWidth = index === 0 ? 1 : this.UNITS[unit][2];
+          const formatted = String(val).padStart(padWidth, '0');
           display.push({ unit, value: val, formatted });
         });
 
@@ -423,7 +426,7 @@
         if (!container) return null;
         container.innerHTML = '';
 
-        const unitList = units.split('').filter(u => 'dhms'.includes(u));
+        const unitList = units.split('').filter(u => 'yMdhmsS'.includes(u));
         const parts = [];
         const separators = [];
 
