@@ -1,0 +1,41 @@
+{
+  "id": "testcard",
+  "version": "1.0.0",
+  "tilre": ">=1.0.0",
+  "name": "Testcard Theme",
+  "description": "Retro TV broadcast test card theme with classic PM5544 style",
+  "author": {
+    "name": "til.re",
+    "url": "https://til.re"
+  },
+  "license": "MIT",
+  "type": "immersive",
+  "files": {
+    "js": "testcard.js",
+    "css": "testcard.css"
+  },
+  "defaults": {
+    "showCrtEffect": true,
+    "logo": "TIL.RE"
+  },
+  "parameters": [
+    {
+      "name": "showCrtEffect",
+      "type": "boolean",
+      "default": true,
+      "description": "Enable CRT scanline retro effect"
+    },
+    {
+      "name": "logo",
+      "type": "string",
+      "default": "TIL.RE",
+      "description": "Logo text in top-left corner"
+    }
+  ],
+  "keywords": ["retro", "tv", "testcard", "broadcast", "vintage", "crt"],
+  "examples": [
+    { "path": "/5m?theme=@til-re/plugin-template:testcard", "label": "Basic usage" },
+    { "path": "/5m?theme=@til-re/plugin-template:testcard&showCrtEffect=false", "label": "Without CRT effect" },
+    { "path": "/5m?theme=@til-re/plugin-template:testcard&logo=TIMER", "label": "Custom logo" }
+  ]
+}

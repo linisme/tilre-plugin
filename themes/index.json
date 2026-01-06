@@ -14,6 +14,13 @@
       "description": "An animated gradient theme demonstrating advanced features",
       "path": "gradient",
       "type": "immersive"
+    },
+    {
+      "id": "testcard",
+      "name": "Testcard Theme",
+      "description": "Retro TV broadcast test card theme with classic PM5544 style",
+      "path": "testcard",
+      "type": "immersive"
     }
   ]
 }
