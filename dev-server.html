@@ -18,35 +18,101 @@
       min-height: 100vh;
     }
 
-    /* Control Panel */
+    /* Floating Panel */
     .dev-panel {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 20px;
+      right: 20px;
       background: #161b22;
-      border-bottom: 1px solid #30363d;
-      padding: 12px 20px;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 0;
       z-index: 1000;
+      font-size: 13px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      min-width: 200px;
+      max-width: 90vw;
+      transition: box-shadow 0.2s;
+    }
+
+    .dev-panel:hover {
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .dev-panel.dragging {
+      opacity: 0.9;
+      cursor: grabbing;
+    }
+
+    /* Panel Header - Always visible */
+    .dev-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #21262d;
+      border-radius: 12px 12px 0 0;
+      cursor: grab;
+      user-select: none;
+    }
+
+    .dev-panel.collapsed .dev-panel-header {
+      border-radius: 12px;
+    }
+
+    .dev-panel-header h1 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #58a6ff;
+      flex: 1;
+    }
+
+    .dev-panel-header .header-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dev-panel-header button {
+      background: transparent;
+      border: none;
+      color: #8b949e;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
       font-size: 14px;
+      line-height: 1;
+    }
+
+    .dev-panel-header button:hover {
+      background: #30363d;
+      color: #c9d1d9;
+    }
+
+    /* Panel Body - Collapsible */
+    .dev-panel-body {
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .dev-panel.collapsed .dev-panel-body {
+      display: none;
     }
 
     .dev-panel-row {
       display: flex;
       align-items: center;
-      gap: 20px;
-    }
-
-    .dev-panel h1 {
-      font-size: 16px;
-      font-weight: 600;
-      color: #58a6ff;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     .dev-panel label {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      font-size: 12px;
+      color: #8b949e;
     }
 
     .dev-panel select,
@@ -55,39 +121,40 @@
       background: #21262d;
       border: 1px solid #30363d;
       color: #c9d1d9;
-      padding: 6px 12px;
+      padding: 5px 10px;
       border-radius: 6px;
-      font-size: 14px;
+      font-size: 12px;
+    }
+
+    .dev-panel select {
+      max-width: 150px;
     }
 
     .dev-panel button {
-      background: #238636;
-      border-color: #238636;
       cursor: pointer;
       font-weight: 500;
     }
 
     .dev-panel button:hover {
+      background: #30363d;
+    }
+
+    .dev-panel button.primary {
+      background: #238636;
+      border-color: #238636;
+    }
+
+    .dev-panel button.primary:hover {
       background: #2ea043;
     }
 
     .dev-panel input[type="number"] {
-      width: 80px;
+      width: 60px;
     }
 
     .dev-controls {
       display: flex;
-      gap: 8px;
-      margin-left: auto;
-    }
-
-    .dev-controls button {
-      background: #21262d;
-      border-color: #30363d;
-    }
-
-    .dev-controls button:hover {
-      background: #30363d;
+      gap: 6px;
     }
 
     .dev-controls button.active {
@@ -95,15 +162,13 @@
       border-color: #388bfd;
     }
 
-    /* Parameters Row */
+    /* Parameters Section */
     .dev-params {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 10px;
+      flex-direction: column;
+      gap: 8px;
       padding-top: 10px;
       border-top: 1px solid #30363d;
-      flex-wrap: wrap;
     }
 
     .dev-params:empty {
@@ -111,33 +176,41 @@
     }
 
     .dev-params-title {
-      font-size: 12px;
+      font-size: 11px;
       color: #8b949e;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    .dev-params-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 8px;
     }
 
     .param-group {
       display: flex;
       align-items: center;
       gap: 6px;
+      position: relative;
     }
 
     .param-group label {
-      font-size: 13px;
+      font-size: 11px;
       color: #8b949e;
+      white-space: nowrap;
     }
 
     .param-group input[type="text"],
     .param-group input[type="number"] {
-      width: 120px;
-      padding: 4px 8px;
-      font-size: 13px;
+      width: 80px;
+      padding: 4px 6px;
+      font-size: 11px;
     }
 
     .param-group input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       cursor: pointer;
     }
 
@@ -152,23 +225,19 @@
       border: 1px solid #30363d;
       padding: 6px 10px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       color: #8b949e;
-      max-width: 250px;
+      max-width: 200px;
       z-index: 100;
-      margin-top: 60px;
+      top: 100%;
+      left: 0;
+      margin-top: 4px;
+      white-space: normal;
     }
 
-    /* Timer Container */
+    /* Timer Container - Full screen */
     #timer-container {
-      margin-top: 110px;
-      min-height: calc(100vh - 110px);
-    }
-
-    .dev-params:empty + #timer-container,
-    #timer-container.no-params {
-      margin-top: 60px;
-      min-height: calc(100vh - 60px);
+      min-height: 100vh;
     }
 
     /* Loading state */
@@ -176,36 +245,74 @@
       opacity: 0.5;
       pointer-events: none;
     }
+
+    /* Resize handle */
+    .dev-panel-resize {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 16px;
+      height: 16px;
+      cursor: se-resize;
+      opacity: 0.3;
+    }
+
+    .dev-panel-resize::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid #8b949e;
+      border-bottom: 2px solid #8b949e;
+    }
+
+    .dev-panel.collapsed .dev-panel-resize {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <!-- Development Control Panel -->
-  <div class="dev-panel">
-    <div class="dev-panel-row">
+  <!-- Floating Development Panel -->
+  <div class="dev-panel" id="dev-panel">
+    <!-- Header - Draggable -->
+    <div class="dev-panel-header" id="panel-header">
       <h1>🛠️ Dev Server</h1>
-
-      <label>
-        Theme:
-        <select id="theme-select">
-          <option value="">Loading...</option>
-        </select>
-      </label>
-
-      <label>
-        Duration:
-        <input type="number" id="duration-input" value="300" min="1"> seconds
-      </label>
-
-      <button id="reload-btn">Reload Theme</button>
-
-      <div class="dev-controls">
-        <button id="pause-btn">⏸ Pause</button>
-        <button id="reset-btn">↺ Reset</button>
+      <div class="header-controls">
+        <button id="collapse-btn" title="Collapse">−</button>
       </div>
     </div>
 
-    <!-- Dynamic Parameters -->
-    <div class="dev-params" id="params-container"></div>
+    <!-- Body - Collapsible -->
+    <div class="dev-panel-body">
+      <div class="dev-panel-row">
+        <label>
+          Theme:
+          <select id="theme-select">
+            <option value="">Loading...</option>
+          </select>
+        </label>
+        <button id="reload-btn" class="primary">↻</button>
+      </div>
+
+      <div class="dev-panel-row">
+        <label>
+          Duration:
+          <input type="number" id="duration-input" value="300" min="1">s
+        </label>
+        <div class="dev-controls">
+          <button id="pause-btn">⏸</button>
+          <button id="reset-btn">↺</button>
+        </div>
+      </div>
+
+      <!-- Dynamic Parameters -->
+      <div class="dev-params" id="params-container"></div>
+    </div>
+
+    <!-- Resize Handle -->
+    <div class="dev-panel-resize" id="panel-resize"></div>
   </div>
 
   <!-- Timer Rendering Container -->
@@ -349,6 +456,9 @@
         this.resetBtn = document.getElementById('reset-btn');
         this.reloadBtn = document.getElementById('reload-btn');
         this.paramsContainer = document.getElementById('params-container');
+        this.panel = document.getElementById('dev-panel');
+        this.panelHeader = document.getElementById('panel-header');
+        this.collapseBtn = document.getElementById('collapse-btn');
 
         this.currentTheme = null;
         this.currentManifest = null;
@@ -359,12 +469,17 @@
         this.animationId = null;
         this.themes = [];
 
+        // Drag state
+        this.isDragging = false;
+        this.dragOffset = { x: 0, y: 0 };
+
         this.init();
       }
 
       async init() {
         await this.loadThemeList();
         this.bindEvents();
+        this.initDrag();
         this.loadTheme();
       }
 
@@ -373,6 +488,49 @@
         this.pauseBtn.addEventListener('click', () => this.togglePause());
         this.resetBtn.addEventListener('click', () => this.reset());
         this.themeSelect.addEventListener('change', () => this.onThemeChange());
+        this.collapseBtn.addEventListener('click', () => this.toggleCollapse());
+      }
+
+      /**
+       * Initialize drag functionality
+       */
+      initDrag() {
+        this.panelHeader.addEventListener('mousedown', (e) => {
+          if (e.target.tagName === 'BUTTON') return;
+          this.isDragging = true;
+          this.panel.classList.add('dragging');
+          const rect = this.panel.getBoundingClientRect();
+          this.dragOffset.x = e.clientX - rect.left;
+          this.dragOffset.y = e.clientY - rect.top;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!this.isDragging) return;
+          const x = e.clientX - this.dragOffset.x;
+          const y = e.clientY - this.dragOffset.y;
+
+          // Keep panel in viewport
+          const maxX = window.innerWidth - this.panel.offsetWidth;
+          const maxY = window.innerHeight - this.panel.offsetHeight;
+
+          this.panel.style.left = Math.max(0, Math.min(x, maxX)) + 'px';
+          this.panel.style.top = Math.max(0, Math.min(y, maxY)) + 'px';
+          this.panel.style.right = 'auto';
+        });
+
+        document.addEventListener('mouseup', () => {
+          this.isDragging = false;
+          this.panel.classList.remove('dragging');
+        });
+      }
+
+      /**
+       * Toggle panel collapse state
+       */
+      toggleCollapse() {
+        const isCollapsed = this.panel.classList.toggle('collapsed');
+        this.collapseBtn.textContent = isCollapsed ? '+' : '−';
+        this.collapseBtn.title = isCollapsed ? 'Expand' : 'Collapse';
       }
 
       /**
@@ -431,11 +589,8 @@
         this.paramsContainer.innerHTML = '';
 
         if (!this.currentManifest || !this.currentManifest.parameters || this.currentManifest.parameters.length === 0) {
-          this.container.classList.add('no-params');
           return;
         }
-
-        this.container.classList.remove('no-params');
 
         const params = this.currentManifest.parameters;
         const defaults = this.currentManifest.defaults || {};
@@ -443,8 +598,12 @@
         // Add title
         const title = document.createElement('span');
         title.className = 'dev-params-title';
-        title.textContent = 'Parameters:';
+        title.textContent = 'Parameters';
         this.paramsContainer.appendChild(title);
+
+        // Add grid container
+        const grid = document.createElement('div');
+        grid.className = 'dev-params-grid';
 
         params.forEach(param => {
           const group = document.createElement('div');
@@ -491,8 +650,10 @@
             group.appendChild(desc);
           }
 
-          this.paramsContainer.appendChild(group);
+          grid.appendChild(group);
         });
+
+        this.paramsContainer.appendChild(grid);
       }
 
       /**
