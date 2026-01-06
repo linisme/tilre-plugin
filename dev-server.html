@@ -27,11 +27,14 @@
       background: #161b22;
       border-bottom: 1px solid #30363d;
       padding: 12px 20px;
+      z-index: 1000;
+      font-size: 14px;
+    }
+
+    .dev-panel-row {
       display: flex;
       align-items: center;
       gap: 20px;
-      z-index: 1000;
-      font-size: 14px;
     }
 
     .dev-panel h1 {
@@ -92,37 +95,117 @@
       border-color: #388bfd;
     }
 
+    /* Parameters Row */
+    .dev-params {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #30363d;
+      flex-wrap: wrap;
+    }
+
+    .dev-params:empty {
+      display: none;
+    }
+
+    .dev-params-title {
+      font-size: 12px;
+      color: #8b949e;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .param-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .param-group label {
+      font-size: 13px;
+      color: #8b949e;
+    }
+
+    .param-group input[type="text"],
+    .param-group input[type="number"] {
+      width: 120px;
+      padding: 4px 8px;
+      font-size: 13px;
+    }
+
+    .param-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .param-group .param-desc {
+      display: none;
+    }
+
+    .param-group:hover .param-desc {
+      display: block;
+      position: absolute;
+      background: #21262d;
+      border: 1px solid #30363d;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #8b949e;
+      max-width: 250px;
+      z-index: 100;
+      margin-top: 60px;
+    }
+
     /* Timer Container */
     #timer-container {
+      margin-top: 110px;
+      min-height: calc(100vh - 110px);
+    }
+
+    .dev-params:empty + #timer-container,
+    #timer-container.no-params {
       margin-top: 60px;
       min-height: calc(100vh - 60px);
+    }
+
+    /* Loading state */
+    .loading {
+      opacity: 0.5;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <!-- Development Control Panel -->
   <div class="dev-panel">
-    <h1>🛠️ Dev Server</h1>
+    <div class="dev-panel-row">
+      <h1>🛠️ Dev Server</h1>
 
-    <label>
-      Theme:
-      <select id="theme-select">
-        <option value="hello">hello (beginner)</option>
-        <option value="gradient">gradient (advanced)</option>
-      </select>
-    </label>
+      <label>
+        Theme:
+        <select id="theme-select">
+          <option value="">Loading...</option>
+        </select>
+      </label>
 
-    <label>
-      Duration:
-      <input type="number" id="duration-input" value="300" min="1"> seconds
-    </label>
+      <label>
+        Duration:
+        <input type="number" id="duration-input" value="300" min="1"> seconds
+      </label>
 
-    <button id="reload-btn">Reload Theme</button>
+      <button id="reload-btn">Reload Theme</button>
 
-    <div class="dev-controls">
-      <button id="pause-btn">⏸ Pause</button>
-      <button id="reset-btn">↺ Reset</button>
+      <div class="dev-controls">
+        <button id="pause-btn">⏸ Pause</button>
+        <button id="reset-btn">↺ Reset</button>
+      </div>
     </div>
+
+    <!-- Dynamic Parameters -->
+    <div class="dev-params" id="params-container"></div>
   </div>
 
   <!-- Timer Rendering Container -->
@@ -265,22 +348,174 @@
         this.pauseBtn = document.getElementById('pause-btn');
         this.resetBtn = document.getElementById('reset-btn');
         this.reloadBtn = document.getElementById('reload-btn');
+        this.paramsContainer = document.getElementById('params-container');
 
         this.currentTheme = null;
+        this.currentManifest = null;
         this.isPaused = false;
         this.remainingMs = 0;
         this.totalMs = 0;
         this.lastTick = 0;
         this.animationId = null;
+        this.themes = [];
 
+        this.init();
+      }
+
+      async init() {
+        await this.loadThemeList();
         this.bindEvents();
+        this.loadTheme();
       }
 
       bindEvents() {
         this.reloadBtn.addEventListener('click', () => this.loadTheme());
         this.pauseBtn.addEventListener('click', () => this.togglePause());
         this.resetBtn.addEventListener('click', () => this.reset());
-        this.themeSelect.addEventListener('change', () => this.loadTheme());
+        this.themeSelect.addEventListener('change', () => this.onThemeChange());
+      }
+
+      /**
+       * Load theme list from themes/index.json
+       */
+      async loadThemeList() {
+        try {
+          const res = await fetch('themes/index.json');
+          const data = await res.json();
+          this.themes = data.themes || [];
+
+          // Populate select dropdown
+          this.themeSelect.innerHTML = this.themes.map(theme =>
+            `<option value="${theme.id}">${theme.name} (${theme.type || 'theme'})</option>`
+          ).join('');
+
+          console.log('[DevServer] Loaded themes:', this.themes.map(t => t.id));
+        } catch (err) {
+          console.error('[DevServer] Failed to load theme list:', err);
+          this.themeSelect.innerHTML = '<option value="">Failed to load themes</option>';
+        }
+      }
+
+      /**
+       * Load theme manifest
+       */
+      async loadThemeManifest(themeId) {
+        try {
+          const res = await fetch(`themes/${themeId}/manifest.json`);
+          return await res.json();
+        } catch (err) {
+          console.warn('[DevServer] No manifest found for theme:', themeId);
+          return null;
+        }
+      }
+
+      /**
+       * Handle theme selection change
+       */
+      async onThemeChange() {
+        const themeId = this.themeSelect.value;
+        if (!themeId) return;
+
+        // Load manifest and render params
+        this.currentManifest = await this.loadThemeManifest(themeId);
+        this.renderParamInputs();
+
+        // Load the theme
+        this.loadTheme();
+      }
+
+      /**
+       * Render parameter inputs based on manifest
+       */
+      renderParamInputs() {
+        this.paramsContainer.innerHTML = '';
+
+        if (!this.currentManifest || !this.currentManifest.parameters || this.currentManifest.parameters.length === 0) {
+          this.container.classList.add('no-params');
+          return;
+        }
+
+        this.container.classList.remove('no-params');
+
+        const params = this.currentManifest.parameters;
+        const defaults = this.currentManifest.defaults || {};
+
+        // Add title
+        const title = document.createElement('span');
+        title.className = 'dev-params-title';
+        title.textContent = 'Parameters:';
+        this.paramsContainer.appendChild(title);
+
+        params.forEach(param => {
+          const group = document.createElement('div');
+          group.className = 'param-group';
+
+          const defaultValue = defaults[param.name] !== undefined ? defaults[param.name] : param.default;
+
+          if (param.type === 'boolean') {
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = `param-${param.name}`;
+            checkbox.checked = defaultValue === true;
+            checkbox.dataset.paramName = param.name;
+            checkbox.dataset.paramType = 'boolean';
+
+            const label = document.createElement('label');
+            label.htmlFor = `param-${param.name}`;
+            label.textContent = param.name;
+
+            group.appendChild(checkbox);
+            group.appendChild(label);
+          } else {
+            const label = document.createElement('label');
+            label.htmlFor = `param-${param.name}`;
+            label.textContent = param.name + ':';
+
+            const input = document.createElement('input');
+            input.type = param.type === 'number' ? 'number' : 'text';
+            input.id = `param-${param.name}`;
+            input.value = defaultValue !== undefined ? defaultValue : '';
+            input.dataset.paramName = param.name;
+            input.dataset.paramType = param.type;
+            input.placeholder = param.description || '';
+
+            group.appendChild(label);
+            group.appendChild(input);
+          }
+
+          // Add tooltip
+          if (param.description) {
+            const desc = document.createElement('span');
+            desc.className = 'param-desc';
+            desc.textContent = param.description;
+            group.appendChild(desc);
+          }
+
+          this.paramsContainer.appendChild(group);
+        });
+      }
+
+      /**
+       * Get current parameter values from inputs
+       */
+      getParamValues() {
+        const values = {};
+        const inputs = this.paramsContainer.querySelectorAll('input[data-param-name]');
+
+        inputs.forEach(input => {
+          const name = input.dataset.paramName;
+          const type = input.dataset.paramType;
+
+          if (type === 'boolean') {
+            values[name] = input.checked;
+          } else if (type === 'number') {
+            values[name] = parseFloat(input.value) || 0;
+          } else {
+            values[name] = input.value;
+          }
+        });
+
+        return values;
       }
 
       async loadTheme() {
@@ -293,6 +528,8 @@
         }
 
         const themeId = this.themeSelect.value;
+        if (!themeId) return;
+
         const duration = parseInt(this.durationInput.value, 10);
 
         // Clear container
@@ -300,6 +537,12 @@
 
         // Remove old stylesheets
         document.querySelectorAll('link[data-theme]').forEach(el => el.remove());
+
+        // Load manifest if not already loaded
+        if (!this.currentManifest || this.currentManifest.id !== themeId) {
+          this.currentManifest = await this.loadThemeManifest(themeId);
+          this.renderParamInputs();
+        }
 
         // Load theme CSS
         const cssLink = document.createElement('link');
@@ -346,8 +589,11 @@
             fullscreen: () => this.toggleFullscreen()
           };
 
+          // Build config from defaults + user params
           const config = {
-            units: 'hms'
+            units: 'hms',
+            ...(this.currentManifest?.defaults || {}),
+            ...this.getParamValues()
           };
 
           renderer.init(this.container, config, actions);
@@ -358,7 +604,7 @@
           this.lastTick = performance.now();
           this.tick();
 
-          console.log(`[DevServer] Loaded theme: ${themeId}`);
+          console.log(`[DevServer] Loaded theme: ${themeId}`, config);
 
         } catch (err) {
           console.error('[DevServer] Failed to load theme:', err);
@@ -430,7 +676,6 @@
 
     // Initialize dev server
     const devServer = new DevServer();
-    devServer.loadTheme();
   </script>
 </body>
 </html>
