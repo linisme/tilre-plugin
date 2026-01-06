@@ -849,7 +849,7 @@
           this.lastTick = performance.now();
           this.tick();
 
-          console.log(`[DevServer] Loaded theme: ${themeId}`, config);
+          console.log(`[DevServer] Loaded theme: ${themeId}`, this.currentConfig);
 
         } catch (err) {
           console.error('[DevServer] Failed to load theme:', err);
