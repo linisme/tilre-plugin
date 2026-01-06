@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>til.re Plugin Development Server</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+    }
+
+    /* Control Panel */
+    .dev-panel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 1000;
+      font-size: 14px;
+    }
+
+    .dev-panel h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #58a6ff;
+    }
+
+    .dev-panel label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dev-panel select,
+    .dev-panel input,
+    .dev-panel button {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .dev-panel button {
+      background: #238636;
+      border-color: #238636;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .dev-panel button:hover {
+      background: #2ea043;
+    }
+
+    .dev-panel input[type="number"] {
+      width: 80px;
+    }
+
+    .dev-controls {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+    }
+
+    .dev-controls button {
+      background: #21262d;
+      border-color: #30363d;
+    }
+
+    .dev-controls button:hover {
+      background: #30363d;
+    }
+
+    .dev-controls button.active {
+      background: #388bfd;
+      border-color: #388bfd;
+    }
+
+    /* Timer Container */
+    #timer-container {
+      margin-top: 60px;
+      min-height: calc(100vh - 60px);
+    }
+  </style>
+</head>
+<body>
+  <!-- Development Control Panel -->
+  <div class="dev-panel">
+    <h1>🛠️ Dev Server</h1>
+
+    <label>
+      Theme:
+      <select id="theme-select">
+        <option value="hello">hello (beginner)</option>
+        <option value="gradient">gradient (advanced)</option>
+      </select>
+    </label>
+
+    <label>
+      Duration:
+      <input type="number" id="duration-input" value="300" min="1"> seconds
+    </label>
+
+    <button id="reload-btn">Reload Theme</button>
+
+    <div class="dev-controls">
+      <button id="pause-btn">⏸ Pause</button>
+      <button id="reset-btn">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- Timer Rendering Container -->
+  <div id="timer-container"></div>
+
+  <!-- Mock Global Utilities (simulating til.re environment) -->
+  <script>
+    /**
+     * Mock TimeFormatter
+     * Provides time formatting utilities
+     */
+    window.TimeFormatter = {
+      decompose(ms, units = 'hms', compact = 0) {
+        const absMs = Math.abs(ms);
+        const totalSeconds = Math.floor(absMs / 1000);
+
+        const values = {
+          h: Math.floor(totalSeconds / 3600),
+          m: Math.floor((totalSeconds % 3600) / 60),
+          s: totalSeconds % 60
+        };
+
+        const display = [];
+        const unitList = units.split('').filter(u => 'hms'.includes(u));
+
+        unitList.forEach((unit, index) => {
+          const val = values[unit] || 0;
+          const formatted = index === 0 ? String(val) : String(val).padStart(2, '0');
+          display.push({ unit, value: val, formatted });
+        });
+
+        // Apply compact
+        if (compact > 0) {
+          while (display.length > compact && display[0].value === 0) {
+            display.shift();
+          }
+        }
+
+        const total = display.map(d => d.formatted).join(':');
+
+        return { total, display, values, formatted: values };
+      }
+    };
+
+    /**
+     * Mock TimerUI
+     * Creates and updates timer DOM elements
+     */
+    window.TimerUI = {
+      create(container, units = 'hms') {
+        if (!container) return null;
+        container.innerHTML = '';
+
+        const unitList = units.split('').filter(u => 'hms'.includes(u));
+        const parts = [];
+        const separators = [];
+
+        unitList.forEach((unit, index) => {
+          if (index > 0) {
+            const sep = document.createElement('span');
+            sep.className = 'separator';
+            sep.textContent = ':';
+            container.appendChild(sep);
+            separators.push(sep);
+          }
+
+          const part = document.createElement('span');
+          part.className = `time-part ${unit}`;
+          part.dataset.unit = unit;
+          part.textContent = '00';
+          container.appendChild(part);
+          parts.push(part);
+        });
+
+        return { container, parts, separators, currentUnits: unitList };
+      },
+
+      update(elements, timeData) {
+        if (!elements || !timeData || !timeData.display) return;
+
+        timeData.display.forEach((item, i) => {
+          if (elements.parts[i]) {
+            elements.parts[i].textContent = item.formatted;
+          }
+        });
+      },
+
+      destroy(elements) {
+        if (elements && elements.container) {
+          elements.container.innerHTML = '';
+        }
+      }
+    };
+
+    /**
+     * Mock Audio
+     * Provides sound utilities
+     */
+    window.Audio = {
+      _enabled: true,
+      isEnabled() { return this._enabled; },
+      toggle() {
+        this._enabled = !this._enabled;
+        console.log('[Audio] Muted:', !this._enabled);
+        return this._enabled;
+      },
+      play(type) {
+        if (!this._enabled) return;
+        console.log('[Audio] Playing:', type);
+      },
+      beep(opts) {
+        if (!this._enabled) return;
+        console.log('[Audio] Beep:', opts);
+      }
+    };
+
+    /**
+     * Mock ThemeManager
+     * Manages theme registration
+     */
+    window.ThemeManager = {
+      _themes: {},
+      register(renderer) {
+        this._themes[renderer.id] = renderer;
+        console.log('[ThemeManager] Registered:', renderer.id);
+      },
+      get(id) {
+        return this._themes[id];
+      }
+    };
+  </script>
+
+  <!-- Dev Server Logic -->
+  <script>
+    class DevServer {
+      constructor() {
+        this.container = document.getElementById('timer-container');
+        this.themeSelect = document.getElementById('theme-select');
+        this.durationInput = document.getElementById('duration-input');
+        this.pauseBtn = document.getElementById('pause-btn');
+        this.resetBtn = document.getElementById('reset-btn');
+        this.reloadBtn = document.getElementById('reload-btn');
+
+        this.currentTheme = null;
+        this.isPaused = false;
+        this.remainingMs = 0;
+        this.totalMs = 0;
+        this.lastTick = 0;
+        this.animationId = null;
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        this.reloadBtn.addEventListener('click', () => this.loadTheme());
+        this.pauseBtn.addEventListener('click', () => this.togglePause());
+        this.resetBtn.addEventListener('click', () => this.reset());
+        this.themeSelect.addEventListener('change', () => this.loadTheme());
+      }
+
+      async loadTheme() {
+        // Cleanup previous theme
+        if (this.currentTheme && this.currentTheme.destroy) {
+          this.currentTheme.destroy();
+        }
+        if (this.animationId) {
+          cancelAnimationFrame(this.animationId);
+        }
+
+        const themeId = this.themeSelect.value;
+        const duration = parseInt(this.durationInput.value, 10);
+
+        // Clear container
+        this.container.innerHTML = '';
+
+        // Remove old stylesheets
+        document.querySelectorAll('link[data-theme]').forEach(el => el.remove());
+
+        // Load theme CSS
+        const cssLink = document.createElement('link');
+        cssLink.rel = 'stylesheet';
+        cssLink.href = `themes/${themeId}/${themeId}.css`;
+        cssLink.dataset.theme = themeId;
+        document.head.appendChild(cssLink);
+
+        // Load theme JS
+        try {
+          // Remove old script
+          document.querySelectorAll('script[data-theme]').forEach(el => el.remove());
+
+          const script = document.createElement('script');
+          script.src = `themes/${themeId}/${themeId}.js?t=${Date.now()}`;
+          script.dataset.theme = themeId;
+
+          await new Promise((resolve, reject) => {
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.appendChild(script);
+          });
+
+          // Wait a bit for script execution
+          await new Promise(r => setTimeout(r, 100));
+
+          // Get the renderer
+          const renderer = window[`TilrePlugin_${themeId}`] || window.ThemeManager.get(themeId);
+
+          if (!renderer) {
+            throw new Error(`Theme "${themeId}" not found`);
+          }
+
+          this.currentTheme = renderer;
+
+          // Initialize
+          this.totalMs = duration * 1000;
+          this.remainingMs = this.totalMs;
+          this.isPaused = false;
+
+          const actions = {
+            togglePause: () => this.togglePause(),
+            reset: () => this.reset(),
+            fullscreen: () => this.toggleFullscreen()
+          };
+
+          const config = {
+            units: 'hms'
+          };
+
+          renderer.init(this.container, config, actions);
+          renderer.setTitle('Development Mode');
+          renderer.setState('active');
+
+          // Start render loop
+          this.lastTick = performance.now();
+          this.tick();
+
+          console.log(`[DevServer] Loaded theme: ${themeId}`);
+
+        } catch (err) {
+          console.error('[DevServer] Failed to load theme:', err);
+          this.container.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f85149;">
+              <div style="text-align:center;">
+                <h2>Failed to load theme: ${themeId}</h2>
+                <p style="opacity:0.7;margin-top:1rem;">${err.message}</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      tick() {
+        const now = performance.now();
+        const delta = now - this.lastTick;
+        this.lastTick = now;
+
+        if (!this.isPaused) {
+          this.remainingMs -= delta;
+        }
+
+        const isElapsed = this.remainingMs < 0;
+        const timeData = TimeFormatter.decompose(this.remainingMs, 'hms');
+
+        if (this.currentTheme && this.currentTheme.render) {
+          this.currentTheme.render(this.remainingMs, {
+            state: this.isPaused ? 'paused' : (isElapsed ? 'elapsed' : 'active'),
+            isElapsed,
+            totalMs: this.totalMs,
+            timeData,
+            units: 'hms'
+          });
+        }
+
+        this.animationId = requestAnimationFrame(() => this.tick());
+      }
+
+      togglePause() {
+        this.isPaused = !this.isPaused;
+        this.pauseBtn.textContent = this.isPaused ? '▶ Play' : '⏸ Pause';
+        this.pauseBtn.classList.toggle('active', this.isPaused);
+
+        if (this.currentTheme && this.currentTheme.setState) {
+          this.currentTheme.setState(this.isPaused ? 'paused' : 'active');
+        }
+      }
+
+      reset() {
+        this.remainingMs = this.totalMs;
+        this.isPaused = false;
+        this.pauseBtn.textContent = '⏸ Pause';
+        this.pauseBtn.classList.remove('active');
+
+        if (this.currentTheme && this.currentTheme.setState) {
+          this.currentTheme.setState('active');
+        }
+      }
+
+      toggleFullscreen() {
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        } else {
+          document.documentElement.requestFullscreen();
+        }
+      }
+    }
+
+    // Initialize dev server
+    const devServer = new DevServer();
+    devServer.loadTheme();
+  </script>
+</body>
+</html>

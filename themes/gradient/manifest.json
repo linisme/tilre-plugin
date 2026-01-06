@@ -1,0 +1,55 @@
+{
+  "id": "gradient",
+  "version": "1.0.0",
+  "tilre": ">=1.0.0",
+  "name": "Gradient Theme",
+  "description": "An animated gradient theme demonstrating advanced features",
+  "author": {
+    "name": "Your Name",
+    "url": "https://github.com/your-username"
+  },
+  "license": "MIT",
+  "type": "immersive",
+  "files": {
+    "js": "gradient.js",
+    "css": "gradient.css"
+  },
+  "defaults": {
+    "gradientSpeed": 5,
+    "gradientColors": "667eea,764ba2,f093fb",
+    "pulseEffect": true,
+    "showProgress": true
+  },
+  "parameters": [
+    {
+      "name": "gradientSpeed",
+      "type": "number",
+      "default": 5,
+      "description": "Gradient animation speed in seconds (1-20)"
+    },
+    {
+      "name": "gradientColors",
+      "type": "string",
+      "default": "667eea,764ba2,f093fb",
+      "description": "Comma-separated hex colors for gradient"
+    },
+    {
+      "name": "pulseEffect",
+      "type": "boolean",
+      "default": true,
+      "description": "Enable pulse animation on time display"
+    },
+    {
+      "name": "showProgress",
+      "type": "boolean",
+      "default": true,
+      "description": "Show progress bar at bottom"
+    }
+  ],
+  "keywords": ["gradient", "animated", "colorful", "progress"],
+  "examples": [
+    { "path": "/5m?theme=@til-re/plugin-template:gradient", "label": "Basic usage" },
+    { "path": "/5m?theme=@til-re/plugin-template:gradient&gradientColors=ff6b6b,4ecdc4,45b7d1", "label": "Custom colors" },
+    { "path": "/5m?theme=@til-re/plugin-template:gradient&gradientSpeed=10&pulseEffect=false", "label": "Slow gradient, no pulse" }
+  ]
+}

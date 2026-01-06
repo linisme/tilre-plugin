@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "themes": [
+    {
+      "id": "hello",
+      "name": "Hello Theme",
+      "description": "A minimal starter theme for learning plugin development",
+      "path": "hello",
+      "type": "functional"
+    },
+    {
+      "id": "gradient",
+      "name": "Gradient Theme",
+      "description": "An animated gradient theme demonstrating advanced features",
+      "path": "gradient",
+      "type": "immersive"
+    }
+  ]
+}
