@@ -208,6 +208,19 @@
       font-size: 11px;
     }
 
+    .param-group select {
+      padding: 4px 6px;
+      font-size: 11px;
+      width: 70px;
+    }
+
+    .param-group input[type="color"] {
+      width: 50px;
+      height: 24px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
     .param-group input[type="checkbox"] {
       width: 14px;
       height: 14px;
@@ -307,7 +320,39 @@
         </div>
       </div>
 
-      <!-- Dynamic Parameters -->
+      <!-- Common Parameters -->
+      <div class="dev-params" id="common-params">
+        <span class="dev-params-title">Common</span>
+        <div class="dev-params-grid">
+          <div class="param-group">
+            <label for="param-units">units:</label>
+            <select id="param-units" data-param-name="units" data-param-type="string">
+              <option value="hms">hms</option>
+              <option value="ms">ms</option>
+              <option value="s">s</option>
+              <option value="dhms">dhms</option>
+            </select>
+          </div>
+          <div class="param-group">
+            <label for="param-compact">compact:</label>
+            <input type="number" id="param-compact" value="0" min="0" max="4" data-param-name="compact" data-param-type="number">
+          </div>
+          <div class="param-group">
+            <label for="param-scale">scale:</label>
+            <input type="number" id="param-scale" value="1" min="0.5" max="3" step="0.1" data-param-name="scale" data-param-type="number">
+          </div>
+          <div class="param-group">
+            <label for="param-color">color:</label>
+            <input type="color" id="param-color" value="#ffffff" data-param-name="color" data-param-type="color">
+          </div>
+          <div class="param-group">
+            <label for="param-bg">bg:</label>
+            <input type="color" id="param-bg" value="#0d1117" data-param-name="bg" data-param-type="color">
+          </div>
+        </div>
+      </div>
+
+      <!-- Theme-specific Parameters -->
       <div class="dev-params" id="params-container"></div>
     </div>
 
@@ -330,13 +375,25 @@
         const totalSeconds = Math.floor(absMs / 1000);
 
         const values = {
-          h: Math.floor(totalSeconds / 3600),
+          d: Math.floor(totalSeconds / 86400),
+          h: Math.floor((totalSeconds % 86400) / 3600),
           m: Math.floor((totalSeconds % 3600) / 60),
           s: totalSeconds % 60
         };
 
+        // If units don't include higher units, accumulate into highest unit
+        const unitList = units.split('').filter(u => 'dhms'.includes(u));
+        if (!unitList.includes('d') && unitList.includes('h')) {
+          values.h += values.d * 24;
+        }
+        if (!unitList.includes('h') && unitList.includes('m')) {
+          values.m += (values.d * 24 + values.h) * 60;
+        }
+        if (!unitList.includes('m') && unitList.includes('s')) {
+          values.s = totalSeconds;
+        }
+
         const display = [];
-        const unitList = units.split('').filter(u => 'hms'.includes(u));
 
         unitList.forEach((unit, index) => {
           const val = values[unit] || 0;
@@ -366,7 +423,7 @@
         if (!container) return null;
         container.innerHTML = '';
 
-        const unitList = units.split('').filter(u => 'hms'.includes(u));
+        const unitList = units.split('').filter(u => 'dhms'.includes(u));
         const parts = [];
         const separators = [];
 
@@ -456,12 +513,14 @@
         this.resetBtn = document.getElementById('reset-btn');
         this.reloadBtn = document.getElementById('reload-btn');
         this.paramsContainer = document.getElementById('params-container');
+        this.commonParams = document.getElementById('common-params');
         this.panel = document.getElementById('dev-panel');
         this.panelHeader = document.getElementById('panel-header');
         this.collapseBtn = document.getElementById('collapse-btn');
 
         this.currentTheme = null;
         this.currentManifest = null;
+        this.currentConfig = null;
         this.isPaused = false;
         this.remainingMs = 0;
         this.totalMs = 0;
@@ -489,6 +548,10 @@
         this.resetBtn.addEventListener('click', () => this.reset());
         this.themeSelect.addEventListener('change', () => this.onThemeChange());
         this.collapseBtn.addEventListener('click', () => this.toggleCollapse());
+
+        // Auto-reload on common param change
+        this.commonParams.addEventListener('input', () => this.debouncedReload());
+        this.commonParams.addEventListener('change', () => this.debouncedReload());
       }
 
       /**
@@ -673,19 +736,28 @@
        */
       getParamValues() {
         const values = {};
-        const inputs = this.paramsContainer.querySelectorAll('input[data-param-name]');
 
-        inputs.forEach(input => {
-          const name = input.dataset.paramName;
-          const type = input.dataset.paramType;
+        // Read from both common params and theme-specific params
+        const containers = [this.commonParams, this.paramsContainer];
 
-          if (type === 'boolean') {
-            values[name] = input.checked;
-          } else if (type === 'number') {
-            values[name] = parseFloat(input.value) || 0;
-          } else {
-            values[name] = input.value;
-          }
+        containers.forEach(container => {
+          const inputs = container.querySelectorAll('[data-param-name]');
+
+          inputs.forEach(input => {
+            const name = input.dataset.paramName;
+            const type = input.dataset.paramType;
+
+            if (type === 'boolean') {
+              values[name] = input.checked;
+            } else if (type === 'number') {
+              values[name] = parseFloat(input.value) || 0;
+            } else if (type === 'color') {
+              // Convert #ffffff to ffffff
+              values[name] = input.value.replace('#', '');
+            } else {
+              values[name] = input.value;
+            }
+          });
         });
 
         return values;
@@ -763,13 +835,13 @@
           };
 
           // Build config from defaults + user params
-          const config = {
+          this.currentConfig = {
             units: 'hms',
             ...(this.currentManifest?.defaults || {}),
             ...this.getParamValues()
           };
 
-          renderer.init(this.container, config, actions);
+          renderer.init(this.container, this.currentConfig, actions);
           renderer.setTitle('Development Mode');
           renderer.setState('active');
 
@@ -802,7 +874,9 @@
         }
 
         const isElapsed = this.remainingMs < 0;
-        const timeData = TimeFormatter.decompose(this.remainingMs, 'hms');
+        const units = this.currentConfig?.units || 'hms';
+        const compact = this.currentConfig?.compact || 0;
+        const timeData = TimeFormatter.decompose(this.remainingMs, units, compact);
 
         if (this.currentTheme && this.currentTheme.render) {
           this.currentTheme.render(this.remainingMs, {
@@ -810,7 +884,7 @@
             isElapsed,
             totalMs: this.totalMs,
             timeData,
-            units: 'hms'
+            units
           });
         }
 
