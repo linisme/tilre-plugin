@@ -654,6 +654,18 @@
         });
 
         this.paramsContainer.appendChild(grid);
+
+        // Auto-reload on param change (debounced)
+        grid.addEventListener('input', () => this.debouncedReload());
+        grid.addEventListener('change', () => this.debouncedReload());
+      }
+
+      /**
+       * Debounced reload to avoid rapid reloads
+       */
+      debouncedReload() {
+        clearTimeout(this._reloadTimer);
+        this._reloadTimer = setTimeout(() => this.loadTheme(), 300);
       }
 
       /**
