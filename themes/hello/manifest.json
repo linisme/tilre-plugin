@@ -1,0 +1,23 @@
+{
+  "id": "hello",
+  "version": "1.0.0",
+  "tilre": ">=1.0.0",
+  "name": "Hello Theme",
+  "description": "A minimal starter theme for learning plugin development",
+  "author": {
+    "name": "Your Name",
+    "url": "https://github.com/your-username"
+  },
+  "license": "MIT",
+  "type": "functional",
+  "files": {
+    "js": "hello.js",
+    "css": "hello.css"
+  },
+  "defaults": {},
+  "parameters": [],
+  "keywords": ["starter", "minimal", "beginner"],
+  "examples": [
+    { "path": "/5m?theme=@til-re/plugin-template:hello", "label": "Basic usage" }
+  ]
+}

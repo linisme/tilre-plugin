@@ -1,0 +1,81 @@
+{
+  "id": "demo",
+  "version": "1.0.0",
+  "tilre": ">=1.0.0",
+  "name": "Demo Shortcuts",
+  "description": "Example shortcuts demonstrating various configurations",
+  "author": {
+    "name": "Your Name",
+    "url": "https://github.com/your-username"
+  },
+  "license": "MIT",
+  "shortcuts": {
+    "focus": {
+      "time": "25m",
+      "config": {
+        "title": "Focus Time",
+        "timeup": "Take a break!"
+      }
+    },
+    "break": {
+      "time": "5m",
+      "config": {
+        "title": "Break",
+        "timeup": "Back to work!",
+        "color": "4ade80"
+      }
+    },
+    "focus-loop": {
+      "time": "25m",
+      "config": {
+        "title": "Focus",
+        "rest_title": "Rest",
+        "loop": true,
+        "rest": "5m"
+      }
+    },
+    "workout": {
+      "time": "30s",
+      "config": {
+        "title": "Exercise",
+        "rest_title": "Rest",
+        "loop": true,
+        "rest": "10s",
+        "color": "ef4444"
+      }
+    },
+    "meditation": {
+      "time": "10m",
+      "config": {
+        "title": "Breathe",
+        "timeup": "Namaste",
+        "mute": false
+      }
+    },
+    "cooking": {
+      "time": "3m",
+      "config": {
+        "title": "Cooking Timer",
+        "timeup": "Ready to serve!",
+        "units": "ms"
+      }
+    },
+    "presentation": {
+      "time": "15m",
+      "config": {
+        "title": "Presentation",
+        "units": "ms",
+        "compact": 2,
+        "scale": 1.2
+      }
+    },
+    "demo-gradient": {
+      "time": "5m",
+      "config": {
+        "title": "Gradient Demo",
+        "theme": "@til-re/plugin-template:gradient",
+        "gradientColors": "ff6b6b,4ecdc4,45b7d1"
+      }
+    }
+  }
+}

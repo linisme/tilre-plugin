@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "packs": [
+    {
+      "id": "demo",
+      "name": "Demo Shortcuts",
+      "description": "Example shortcuts demonstrating various configurations",
+      "file": "demo.json"
+    }
+  ]
+}
