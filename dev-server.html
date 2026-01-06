@@ -208,6 +208,15 @@
       font-size: 11px;
     }
 
+    .param-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .param-group.full-width input[type="text"] {
+      flex: 1;
+      width: auto;
+    }
+
     .param-group select {
       padding: 4px 6px;
       font-size: 11px;
@@ -324,6 +333,14 @@
       <div class="dev-params" id="common-params">
         <span class="dev-params-title">Common</span>
         <div class="dev-params-grid">
+          <div class="param-group full-width">
+            <label for="param-title">title:</label>
+            <input type="text" id="param-title" value="" placeholder="Timer title" data-param-name="title" data-param-type="string">
+          </div>
+          <div class="param-group full-width">
+            <label for="param-timeup">timeup:</label>
+            <input type="text" id="param-timeup" value="" placeholder="Time's up message" data-param-name="timeup" data-param-type="string">
+          </div>
           <div class="param-group">
             <label for="param-units">units:</label>
             <input type="text" id="param-units" value="hms" placeholder="yMdhmsS" data-param-name="units" data-param-type="string">
@@ -337,12 +354,33 @@
             <input type="number" id="param-scale" value="1" min="0.5" max="3" step="0.1" data-param-name="scale" data-param-type="number">
           </div>
           <div class="param-group">
+            <label for="param-font">font:</label>
+            <select id="param-font" data-param-name="font" data-param-type="string">
+              <option value="">default</option>
+              <option value="pixel">pixel</option>
+              <option value="mono">mono</option>
+              <option value="serif">serif</option>
+            </select>
+          </div>
+          <div class="param-group">
             <label for="param-color">color:</label>
             <input type="color" id="param-color" value="#ffffff" data-param-name="color" data-param-type="color">
           </div>
           <div class="param-group">
             <label for="param-bg">bg:</label>
             <input type="color" id="param-bg" value="#0d1117" data-param-name="bg" data-param-type="color">
+          </div>
+          <div class="param-group">
+            <input type="checkbox" id="param-loop" data-param-name="loop" data-param-type="boolean">
+            <label for="param-loop">loop</label>
+          </div>
+          <div class="param-group">
+            <label for="param-rest">rest:</label>
+            <input type="text" id="param-rest" value="" placeholder="5m" data-param-name="rest" data-param-type="string">
+          </div>
+          <div class="param-group">
+            <input type="checkbox" id="param-mute" data-param-name="mute" data-param-type="boolean">
+            <label for="param-mute">mute</label>
           </div>
         </div>
       </div>
@@ -845,7 +883,7 @@
           };
 
           renderer.init(this.container, this.currentConfig, actions);
-          renderer.setTitle('Development Mode');
+          renderer.setTitle(this.currentConfig.title || 'Development Mode');
           renderer.setState('active');
 
           // Start render loop
