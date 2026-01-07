@@ -93,7 +93,8 @@ Add your theme to `themes/index.json`:
       "id": "mytheme",
       "name": "My Theme",
       "description": "My first til.re theme",
-      "path": "mytheme"
+      "path": "mytheme",
+      "preview": "mytheme/preview.png"
     }
   ]
 }
