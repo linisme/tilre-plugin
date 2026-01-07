@@ -1,5 +1,6 @@
 /**
- * Testcard Theme - PM5544 Style
+ * Testcard Theme - Enhanced PM5544 Style
+ * High-fidelity broadcast simulation with realistic CRT effects
  */
 ;(function(global) {
   'use strict';
@@ -93,9 +94,6 @@
   <div class="tc-circle-w"></div>
   <div class="tc-circle-b">
     <div class="tc-inner">
-      <!-- Time -->
-      <div class="tc-time-box"><span class="tc-time">00:00:00</span></div>
-
       <!-- Vertical line -->
       <div class="tc-vline"></div>
 
@@ -139,8 +137,14 @@
     </div>
   </div>
 
+  <!-- Overlay for unclipped elements -->
+  <div class="tc-overlay">
+    <!-- Time -->
+    <div class="tc-time-box"><span class="tc-time">00:00:00</span></div>
+  </div>
+
   <!-- Logo -->
-  <div class="tc-logo"><span>${this._esc(logo)}</span></div>
+  ${logo ? `<div class="tc-logo"><span>${this._esc(logo)}</span></div>` : ''}
 
   <div class="tc-msg"></div>
   <div class="tc-crt"></div>
