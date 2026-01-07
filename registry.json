@@ -5,7 +5,7 @@
   "repository": "https://github.com/til-re/plugin-template",
   "themes": {
     "index": "themes/index.json",
-    "count": 2
+    "count": 3
   },
   "shortcuts": {
     "index": "shortcuts/index.json",
