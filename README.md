@@ -10,10 +10,10 @@ See [QUICKSTART.md](./QUICKSTART.md) for a step-by-step guide to create your fir
 
 ### Example Themes
 
-| Theme | Type | Description |
-|-------|------|-------------|
-| `hello` | functional | Minimal starter theme - perfect for learning |
-| `gradient` | immersive | Advanced theme with animations and custom parameters |
+| Theme | Description |
+|-------|-------------|
+| `hello` | Minimal starter theme - perfect for learning |
+| `gradient` | Advanced theme with animations and custom parameters |
 
 ### Example Shortcuts
 
@@ -23,6 +23,9 @@ See [QUICKSTART.md](./QUICKSTART.md) for a step-by-step guide to create your fir
 | `break` | 5m | Short break with green color |
 | `focus-loop` | 25m | Pomodoro-style with rest periods |
 | `workout` | 30s | HIIT-style workout intervals |
+| `meditation` | 10m | Meditation timer |
+| `cooking` | 3m | Cooking timer with minutes display |
+| `presentation` | 15m | Presentation timer with large scale |
 | `demo-gradient` | 5m | Demo using the gradient theme |
 
 ## Using This Template
@@ -74,12 +77,14 @@ https://til.re/@your-username/your-repo:your-shortcut
 Themes control the visual appearance and user interactions of the timer.
 
 ```
+registry.json             # Plugin discovery (name, description, counts)
 themes/
-├── index.json          # Theme catalog
+├── index.json            # Theme catalog (id, name, description, path, preview)
 └── your-theme/
-    ├── manifest.json   # Theme metadata
-    ├── your-theme.js   # Theme renderer
-    └── your-theme.css  # Theme styles
+    ├── manifest.json     # Theme metadata
+    ├── preview.png       # Theme preview image
+    ├── your-theme.js     # Theme renderer
+    └── your-theme.css    # Theme styles
 ```
 
 See [docs/theme-api.md](./docs/theme-api.md) for the complete API reference.
@@ -90,8 +95,8 @@ Shortcuts are predefined timer configurations with semantic names.
 
 ```
 shortcuts/
-├── index.json          # Shortcut catalog
-└── your-pack.json      # Shortcut definitions
+├── index.json            # Shortcut catalog
+└── your-pack.json        # Shortcut definitions
 ```
 
 See [docs/shortcuts-guide.md](./docs/shortcuts-guide.md) for details.

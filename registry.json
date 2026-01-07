@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "name": "til.re Plugin Template",
+  "description": "Example themes and shortcuts for til.re plugin development",
+  "repository": "https://github.com/til-re/plugin-template",
+  "themes": {
+    "index": "themes/index.json",
+    "count": 2
+  },
+  "shortcuts": {
+    "index": "shortcuts/index.json",
+    "count": 8
+  }
+}

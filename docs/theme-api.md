@@ -4,11 +4,12 @@ Complete documentation for creating til.re themes.
 
 ## File Structure
 
-A theme consists of three files:
+A theme consists of these files:
 
 ```
 themes/your-theme/
 ├── manifest.json   # Metadata and configuration
+├── preview.png     # Theme preview image
 ├── your-theme.js   # Theme renderer
 └── your-theme.css  # Styles
 ```
@@ -29,7 +30,6 @@ The manifest defines your theme's metadata and configuration.
     "url": "https://github.com/your-username"
   },
   "license": "MIT",
-  "type": "functional",
   "files": {
     "js": "your-theme.js",
     "css": "your-theme.css"
@@ -63,17 +63,11 @@ The manifest defines your theme's metadata and configuration.
 | `description` | Yes | Short description |
 | `author` | No | Author information |
 | `license` | No | License identifier |
-| `type` | No | "functional" or "immersive" |
 | `files` | Yes | File paths for JS and CSS |
 | `defaults` | No | Default configuration values |
 | `parameters` | No | Parameter documentation |
 | `keywords` | No | Search keywords |
 | `examples` | No | Usage examples |
-
-### Theme Types
-
-- **functional**: Minimal UI changes, focuses on displaying time
-- **immersive**: Full-screen experience with animations and effects
 
 ## Theme Renderer
 

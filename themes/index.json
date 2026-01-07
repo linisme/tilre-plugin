@@ -6,13 +6,14 @@
       "name": "Hello Theme",
       "description": "A minimal starter theme for learning plugin development",
       "path": "hello",
-      "type": "functional"
+      "preview": "hello/preview.png"
     },
     {
       "id": "gradient",
       "name": "Gradient Theme",
       "description": "An animated gradient theme demonstrating advanced features",
       "path": "gradient",
+      "preview": "gradient/preview.png",
       "type": "immersive"
     },
     {
