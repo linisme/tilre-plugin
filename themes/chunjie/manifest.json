@@ -1,0 +1,23 @@
+{
+  "id": "chunjie",
+  "version": "1.0.0",
+  "tilre": ">=1.0.0",
+  "name": "Chinese New Year 2026",
+  "description": "A festive theme for the Year of the Horse with daily variations (Eve, Day 1, Day 2).",
+  "author": {
+    "name": "Gemini",
+    "url": ""
+  },
+  "license": "MIT",
+  "type": "functional",
+  "files": {
+    "js": "chunjie.js",
+    "css": "chunjie.css"
+  },
+  "defaults": {},
+  "parameters": [],
+  "keywords": ["cny", "chinese", "holiday", "festival", "red"],
+  "examples": [
+    { "path": "/2026-02-17?theme=chunjie", "label": "Countdown to CNY 2026" }
+  ]
+}
