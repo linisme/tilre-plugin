@@ -21,6 +21,13 @@
       "description": "Retro TV broadcast test card theme with classic PM5544 style",
       "path": "testcard",
       "preview": "testcard/preview.png"
+    },
+    {
+      "id": "chunjie",
+      "name": "Chinese New Year 2026",
+      "description": "A festive theme for the Year of the Horse with daily variations",
+      "path": "chunjie",
+      "preview": "chunjie/preview.png"
     }
   ]
 }
